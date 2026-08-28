@@ -22,11 +22,14 @@ if errorlevel 1 (
   echo [WARN] cap:sync failed, skip APK (Android SDK missing?).
   goto :package
 )
-call npm run apk:debug
+REM Call gradlew directly (skipping the npm-run wrapper).
+cd /d "C:\Users\72980\WorkBuddy\2026-08-17-09-13-57\dave-diver-tasks\android"
+call gradlew.bat assembleDebug
 if errorlevel 1 (
   echo [WARN] APK build failed, skip APK (Android SDK missing?).
   goto :package
 )
+cd /d "C:\Users\72980\WorkBuddy\2026-08-17-09-13-57\dave-diver-tasks"
 
 :package
 echo.
