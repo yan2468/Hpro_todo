@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimary">#34a06a</color>
+    <color name="colorPrimaryDark">#247a4a</color>
+    <color name="colorAccent">#f5a623</color>
+
+    <!-- 习惯小组件 -->
+    <color name="widget_cream">#fffdf5</color>
+    <color name="widget_cream_dark">#f3e9d2</color>
+    <color name="widget_green">#34a06a</color>
+    <color name="widget_green_dark">#247a4a</color>
+    <color name="widget_text">#21362c</color>
+    <color name="widget_text_muted">#5d736a</color>
+    <color name="widget_text_on_green">#ffffff</color>
+    <color name="widget_shadow">#1a000000</color>
+    <color name="widget_accent">#f5a623</color>
+</resources>

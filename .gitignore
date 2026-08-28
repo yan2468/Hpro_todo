@@ -1,0 +1,29 @@
+# ---------- Dependencies (大，不入库) ----------
+node_modules/
+
+# ---------- Build outputs (可重新生成) ----------
+dist/
+electron/dist/
+release/
+release-out*/
+*.log
+
+# ---------- Secrets / 环境变量 (含数据库与 JWT 密钥，严禁入库) ----------
+.env
+.env.local
+.env.*.local
+# 注意：.env.example 是模板（无密钥），有意保留入库
+
+# ---------- Android 本地配置 (含本机 SDK 路径) ----------
+android/local.properties
+android/.gradle/
+android/app/build/
+android/app/.cxx/
+
+# ---------- 编辑器 / 系统文件 ----------
+.DS_Store
+Thumbs.db
+.idea/
+
+# ---------- 本机 Agent 状态 (非源码) ----------
+.workbuddy/

@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- 外圈柔和阴影 -->
+    <item>
+        <shape android:shape="oval">
+            <solid android:color="#1a000000" />
+            <size
+                android:width="100dp"
+                android:height="100dp" />
+        </shape>
+    </item>
+    <!-- 主体奶油圆 -->
+    <item android:bottom="2dp">
+        <shape android:shape="oval">
+            <solid android:color="#fffdf5" />
+            <stroke
+                android:width="2dp"
+                android:color="#f3e9d2" />
+            <size
+                android:width="100dp"
+                android:height="100dp" />
+        </shape>
+    </item>
+    <!-- 内圈装饰环 -->
+    <item
+        android:left="8dp"
+        android:top="8dp"
+        android:right="8dp"
+        android:bottom="8dp">
+        <shape android:shape="oval">
+            <stroke
+                android:width="1.5dp"
+                android:color="#34a06a" />
+            <size
+                android:width="84dp"
+                android:height="84dp" />
+        </shape>
+    </item>
+</layer-list>

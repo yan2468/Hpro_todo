@@ -1,0 +1,55 @@
+sequenceDiagram
+  %% === 4.1 习惯打卡端到端（App 内） ===
+  participant U as 用户
+  participant HV as HabitListView
+  participant HS as useHabitStore(checkIn)
+  participant API as api.habits.checkIn
+  participant S as Fastify /habits/:id/checkin
+  participant DB as PostgreSQL
+  U->>HV: 点击"打卡"
+  HV->>HS: checkIn(habitId, today)
+  HS->>API: POST /habits/:id/checkin {checkDate}
+  API->>S: fetch(.../habits/:id/checkin)
+  S->>DB: INSERT ... ON CONFLICT DO NOTHING
+  DB-->>S: HabitCheckin
+  S-->>API: HabitCheckin
+  API-->>HS: normalize(HabitCheckin)
+  HS->>HS: dispatch upsert checkin + 刷新本地 stats 缓存
+  HS-->>HV: 更新列表（✓ 已打卡）
+  HV-->>U: 卡片显示已打卡态
+
+  %% === 4.2 移动端提醒弹窗「10分钟后提醒」调度 ===
+  Note over U,DB: 仅 isMobileView() 时启用
+  participant T as 轮询check()(5s)
+  participant SR as Shell.pendingSnoozes
+  participant RP as ReminderPopup(inApp)
+  participant NR as scheduleReminder
+  T->>T: 遍历 activeTasks，到点→setInAppReminder({title,id})
+  T->>RP: 渲染居中弹窗（inApp）
+  U->>RP: 点"10分钟后提醒"
+  RP->>SR: onSnooze(id, 10)
+  SR->>SR: pendingSnoozes.set(id, Date.now()+10*60000)
+  RP->>NR: scheduleReminder(title, now+10m, id)
+  RP->>RP: onClose()(关弹窗，firedReminderIds 保留该 id)
+  Note over T: 10 分钟内 check() 因 firedReminderIds 含 id 不重复弹
+  Note over T: 10 分钟后 T 命中 pendingSnoozes → 删除条目 → 再次 setInAppReminder
+
+  %% === 4.3 Android 小组件点击打卡 ===
+  participant W as HabitWidgetProvider(RemoteViews)
+  participant R as HabitWidgetClickReceiver
+  participant SP as SharedPreferences(dd_auth / widget_habit_<id>)
+  participant HTTP as HttpURLConnection → Fastify
+  U->>W: 点击 2×2 小组件
+  W->>R: PendingIntent(getBroadcast, action=CLICK, extra appWidgetId)
+  R->>SP: 读 token / base / habitId / 今日已打卡?
+  alt 今日未打卡
+    R->>HTTP: POST /habits/:id/checkin {checkDate:今天}
+    HTTP->>DB: INSERT ...(幂等)
+    R->>SP: 标记今日已打卡=true
+  else 今日已打卡
+    R->>HTTP: DELETE /habits/:id/checkin/:date
+    HTTP->>DB: DELETE ...
+    R->>SP: 标记今日已打卡=false
+  end
+  R->>W: appWidgetManager.updateAppWidget(刷新圆环/次数)
+  W-->>U: 圆环 100% 绿 / 累计+1

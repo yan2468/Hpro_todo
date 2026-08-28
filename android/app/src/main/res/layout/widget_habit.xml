@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/widget_habit_root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <!-- 固定 100dp × 100dp 正圆容器，避免被拉伸成椭圆 -->
+    <FrameLayout
+        android:layout_width="100dp"
+        android:layout_height="100dp"
+        android:layout_gravity="center">
+
+        <!-- 背景：打卡前奶油 / 打卡后绿色 -->
+        <ImageView
+            android:id="@+id/widget_habit_bg"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:contentDescription="背景"
+            android:src="@drawable/widget_bg_unchecked" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:orientation="vertical"
+            android:padding="8dp">
+
+            <!-- 习惯图标 -->
+            <TextView
+                android:id="@+id/widget_habit_icon"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:text="🔥"
+                android:textSize="22sp" />
+
+            <!-- 习惯名称 -->
+            <TextView
+                android:id="@+id/widget_habit_name"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:ellipsize="end"
+                android:gravity="center"
+                android:maxLines="1"
+                android:text="习惯"
+                android:textColor="#21362c"
+                android:textSize="13sp"
+                android:textStyle="bold" />
+
+            <!-- 累计天数 -->
+            <TextView
+                android:id="@+id/widget_habit_total"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="1dp"
+                android:gravity="center"
+                android:text="累计 0 天"
+                android:textColor="#5d736a"
+                android:textSize="10sp" />
+        </LinearLayout>
+
+        <!-- 打卡成功后的大勾 -->
+        <ImageView
+            android:id="@+id/widget_habit_check"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:layout_gravity="center"
+            android:contentDescription="已打卡"
+            android:src="@drawable/widget_check_mark"
+            android:visibility="gone" />
+    </FrameLayout>
+</FrameLayout>

@@ -1,0 +1,40 @@
+{
+  "appId": "com.davediver.tasks",
+  "productName": "🐮🐴的打工日志",
+  "icon": "public/icon.png",
+  "directories": {
+    "output": "release-out"
+  },
+  "compression": "store",
+  "asar": false,
+  "files": [
+    "dist/**/*",
+    "electron/dist/**/*",
+    "package.json",
+    "!node_modules",
+    "!node_modules/**/*",
+    "!android",
+    "!android/**/*",
+    "!ios",
+    "!deploy",
+    "!deploy/**/*",
+    "!server",
+    "!server/**/*",
+    "!scripts",
+    "!scripts/**/*",
+    "!release-out",
+    "!release-out/**/*",
+    "!release",
+    "!release/**/*"
+  ],
+  "win": {
+    "target": [{ "target": "dir", "arch": ["x64"] }]
+  },
+  "mac": {
+    "target": [],
+    "identity": null
+  },
+  "linux": {
+    "target": []
+  }
+}

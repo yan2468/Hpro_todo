@@ -1,0 +1,88 @@
+classDiagram
+  class Habit {
+    +string id
+    +string user_id
+    +string title
+    +string color
+    +string icon
+    +string reminderAt
+    +string startDate
+    +string createdAt
+    +string updatedAt
+  }
+  class HabitCheckin {
+    +string id
+    +string habitId
+    +string userId
+    +string checkDate
+    +string createdAt
+  }
+  class HabitStats {
+    +string habitId
+    +number total
+    +number currentStreak
+    +number monthlyCount
+    +number monthlyRate
+  }
+  class HabitsApi {
+    +Habit[] habits
+    +refresh()
+    +addHabit(p)
+    +updateHabit(id,p)
+    +removeHabit(id)
+    +checkIn(id,date)
+    +uncheckIn(id,date)
+    +getCheckins(id,from,to)
+    +getStats()
+  }
+  class HabitListView {
+    +render()
+    +onCheckIn(h)
+  }
+  class HabitDetailView {
+    +renderStats()
+    +renderCalendar()
+  }
+  class HabitForm {
+    +onSubmit()
+  }
+  class BackToTop {
+    +number threshold
+    +number bottomMobile
+    +number bottomDesktop
+    +onScroll()
+  }
+  class ReminderPopup {
+    +boolean inApp
+    +onSnooze(id,minutes)
+    +doSnooze(minutes)
+  }
+  class Shell {
+    +pendingSnoozes: Map~string,number~
+    +check()
+    +onSnooze(id,minutes)
+  }
+  class AuthBridgePlugin {
+    +setAuth(token, base)
+  }
+  class HabitWidgetProvider {
+    +onUpdate()
+    +buildRemoteViews()
+  }
+  class HabitWidgetClickReceiver {
+    +onReceive()
+  }
+
+  Habit "1" *-- "0..*" HabitCheckin : has
+  HabitsApi ..> Habit : returns
+  HabitsApi ..> HabitCheckin : returns
+  HabitsApi ..> HabitStats : getStats
+  HabitListView ..> HabitsApi : useHabitStore
+  HabitDetailView ..> HabitsApi : useHabitStore
+  HabitForm ..> HabitsApi : create/update
+  Shell ..> ReminderPopup : renders(inApp)
+  Shell ..> HabitListView : view='habits'
+  Shell ..> BackToTop : ReportsView
+  HabitWidgetProvider ..> AuthBridgePlugin : read token
+  HabitWidgetClickReceiver ..> AuthBridgePlugin : read token
+  HabitWidgetClickReceiver ..> HabitWidgetProvider : updateAppWidget
