@@ -33,8 +33,8 @@ export function isTouchMode(): boolean {
   return coarseQuery?.matches ?? false;
 }
 
-/** 默认后端地址：ECS 公网 IP + 端口 */
-export const DEFAULT_API_BASE = 'http://8.163.32.86:8787';
+/** 默认后端地址：阿里云 ECS + Nginx + Let's Encrypt 证书（HTTPS）；用 www 子域名——根域名 hbywqx.top 经实测不响应 /health（Nginx 只对 www 做了 443 反代 8787） */
+export const DEFAULT_API_BASE = 'https://www.hbywqx.top';
 
 /**
  * 给 body 标记 .is-mobile 类，让 CSS 媒体查询之外的 JS 也能识别。

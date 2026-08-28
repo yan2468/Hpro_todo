@@ -477,7 +477,7 @@ export function SettingsModal({
           <div className="set-section">
             <div className="set-section-title">🌐 服务器配置</div>
             <p className="hint">
-              服务器地址仅在登录前可配置；当前已连接到 <code>{localStorage.getItem('dd_api_base') || import.meta.env.VITE_API_BASE || 'http://8.163.32.86:8787'}</code>。
+              服务器地址仅在登录前可配置；当前已连接到 <code>{localStorage.getItem('dd_api_base') || import.meta.env.VITE_API_BASE || 'https://www.hbywqx.top'}</code>。
               如需切换服务器，请先退出登录。
             </p>
           </div>
