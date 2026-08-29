@@ -7,7 +7,7 @@ import { ReportForm, type ReportFormData } from './ReportForm';
 import { BackToTop } from './BackToTop';
 import { parseReports } from '../lib/parseReports';
 import { getAIConfig } from '../lib/aiConfig';
-import { generateAndSaveWeekly, weeklyDailies } from '../lib/aiReport';
+import { generateAndSaveWeekly, weeklyDailies, hasWeeklyThisWeek } from '../lib/aiReport';
 
 // 报告卡片 / 导出展示用的日期时间：reportDate + 可选的 HH:mm
 // 后端返回的 reportDate 是 ISO 字符串（如 2026-08-19T16:00:00.000Z），需按本地时区解析
@@ -59,6 +59,10 @@ export function ReportsView() {
       setAiStatus(`本周日报不足 5 条（当前 ${dailiesThisWeek} 条），暂无法生成`);
       return;
     }
+    if (hasWeeklyThisWeek(store.reports)) {
+      setAiStatus('本周周报已存在，无需重复生成');
+      return;
+    }
     setAiBusy(true);
     setAiStatus('正在调用大模型生成周报…');
     const res = await generateAndSaveWeekly(
@@ -75,7 +79,17 @@ export function ReportsView() {
     }
   };
 
-  const filtered = store.reports.filter((r) => (filter === 'all' ? true : r.type === filter));
+  const filtered = store.reports
+    .filter((r) => (filter === 'all' ? true : r.type === filter))
+    .sort((a, b) => {
+      // 先按日期降序（新的在前）
+      const dateA = a.reportDate || '';
+      const dateB = b.reportDate || '';
+      if (dateA !== dateB) return dateB < dateA ? -1 : 1;
+      // 同日期：周报优先于日报
+      if (a.type !== b.type) return a.type === 'weekly' ? -1 : 1;
+      return 0;
+    });
 
   const openNew = (type: ReportType) => {
     setDefaultType(type);
@@ -360,6 +374,13 @@ export function ReportsView() {
 
       {store.loading && filtered.length === 0 && <div className="empty">加载中…</div>}
       {store.error && <div className="err report-err">{store.error}</div>}
+
+      {filtered.length > 0 && (
+        <div className="list-summary">
+          共 {filtered.length} 条{typeLabel(filter)}
+          {filter === 'all' && ` （日报 ${filtered.filter(r => r.type === 'daily').length} · 周报 ${filtered.filter(r => r.type === 'weekly').length}）`}
+        </div>
+      )}
 
       <div className="report-list">
         {filtered.length === 0 && !store.loading ? (

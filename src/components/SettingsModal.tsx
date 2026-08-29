@@ -17,6 +17,7 @@ import {
 } from '../lib/tags';
 import { getTheme, setTheme, type ThemeMode } from '../lib/theme';
 import { loadSettingsFromServer, saveSettingsToServer } from '../lib/settingsSync';
+import { getBase } from '../lib/api';
 
 const electronAPI = (window as any).electronAPI;
 
@@ -263,7 +264,8 @@ export function SettingsModal({
             <WorkStatusSettings />
           </div>
 
-          {/* 桌面小组件 */}
+          {/* 桌面小组件（仅桌面端显示，移动端由用户在手机桌面自行配置） */}
+          {electronAPI && (
           <div className="set-section">
             <div className="set-section-title">🖥 桌面小组件</div>
             <p className="hint">
@@ -276,6 +278,7 @@ export function SettingsModal({
             </div>
             {widgetMsg && <div className="hint set-inline-msg">{widgetMsg}</div>}
           </div>
+          )}
 
           {/* 标签配置 */}
           <div className="set-section">
@@ -477,7 +480,7 @@ export function SettingsModal({
           <div className="set-section">
             <div className="set-section-title">🌐 服务器配置</div>
             <p className="hint">
-              服务器地址仅在登录前可配置；当前已连接到 <code>{localStorage.getItem('dd_api_base') || import.meta.env.VITE_API_BASE || 'https://www.hbywqx.top'}</code>。
+              服务器地址仅在登录前可配置；当前已连接到 <code>{getBase()}</code>。
               如需切换服务器，请先退出登录。
             </p>
           </div>

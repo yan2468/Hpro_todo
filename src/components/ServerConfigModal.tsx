@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { DEFAULT_API_BASE } from '../lib/platform';
+import { getBase } from '../lib/api';
 
 const electronAPI = (window as any).electronAPI;
 
@@ -9,11 +10,7 @@ const electronAPI = (window as any).electronAPI;
  * 登录后完整的设置中心由 SettingsModal 提供。
  */
 export function ServerConfigModal({ onClose }: { onClose: () => void }) {
-  const [base, setBase] = useState(
-    localStorage.getItem('dd_api_base') ||
-      import.meta.env.VITE_API_BASE ||
-      DEFAULT_API_BASE
-  );
+  const [base, setBase] = useState(getBase());
   const [msg, setMsg] = useState('');
   const [testing, setTesting] = useState(false);
   const flash = (text: string) => {

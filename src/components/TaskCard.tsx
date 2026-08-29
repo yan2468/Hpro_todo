@@ -180,14 +180,14 @@ export function TaskCard({
     e.preventDefault();
     longPressStartPt.current = { x: e.clientX, y: e.clientY };
     longPressStarted.current = false;
-    // 600ms 触发，给设备采样留时间窗
+    // 400ms 触发，比默认 600ms 更灵敏，减少等待感
     longPressTimer.current = window.setTimeout(() => {
       longPressStarted.current = true;
       setReadyForLongPress(true);
       // 震动反馈：明确告知"已进入拖拽模式"
       navigator.vibrate?.(25);
       longPress.onLongPressStart?.(task.id, longPressStartPt.current || { x: 0, y: 0 });
-    }, 600);
+    }, 400);
   };
   const handlePointerMove = (e: React.PointerEvent) => {
     if (!touchMode || !longPress) return;

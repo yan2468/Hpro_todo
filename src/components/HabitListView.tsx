@@ -4,6 +4,7 @@ import { Confetti } from './Confetti';
 import { HabitDetailView } from './HabitDetailView';
 import { HabitForm } from './HabitForm';
 import type { Habit } from '../types';
+import { scheduleReminder } from '../lib/notifications';
 
 function todayStr(): string {
   const d = new Date();
@@ -44,6 +45,24 @@ export function HabitListView() {
     (store.checkins[id] ?? []).some((c) => c.checkDate === today);
   const totalOf = (id: string) => store.stats[id]?.total ?? 0;
   const streakOf = (id: string) => store.stats[id]?.currentStreak ?? 0;
+
+  // 调度习惯每日提醒：遍历有 reminderAt 的习惯，计算今天该时刻并注册系统通知
+  useEffect(() => {
+    store.habits.forEach((h) => {
+      if (!h.reminderAt) return;
+      // 如果今天已打卡则跳过提醒
+      if (isCheckedToday(h.id)) return;
+      const [hh, mm] = h.reminderAt.split(':').map(Number);
+      if (isNaN(hh) || isNaN(mm)) return;
+      const now = new Date();
+      const when = new Date(now.getFullYear(), now.getMonth(), now.getDate(), hh, mm, 0, 0);
+      // 只调度未来的时间
+      if (when.getTime() > Date.now()) {
+        scheduleReminder(`习惯打卡提醒：${h.title}`, when, `habit-${h.id}`);
+      }
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [idsKey]);
 
   const onCheck = async (h: Habit) => {
     if (isCheckedToday(h.id)) {
@@ -126,7 +145,16 @@ export function HabitListView() {
                 title={isCheckedToday(h.id) ? '取消今日打卡' : '今日打卡'}
                 aria-label={isCheckedToday(h.id) ? '取消今日打卡' : '今日打卡'}
               >
-                {isCheckedToday(h.id) ? '✓' : '○'}
+                {isCheckedToday(h.id) ? (
+                  <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                    <circle cx="10" cy="10" r="9" fill="currentColor" opacity="0.15"/>
+                    <path d="M6 10.5l2.5 2.5 5.5-6" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                ) : (
+                  <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                    <circle cx="10" cy="10" r="8.5" stroke="currentColor" strokeWidth="1.8" opacity="0.4"/>
+                  </svg>
+                )}
               </button>
             </div>
           ))

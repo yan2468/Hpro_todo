@@ -1,4 +1,4 @@
-import { app, BrowserWindow, Menu, ipcMain, dialog, screen, Notification } from 'electron';
+import { app, BrowserWindow, Menu, Tray, ipcMain, dialog, screen, Notification } from 'electron';
 import * as path from 'path';
 import * as fs from 'fs';
 import { spawnSync } from 'child_process';
@@ -9,6 +9,7 @@ Menu.setApplicationMenu(null);
 let mainWin: BrowserWindow | null = null;
 let widgetWin: BrowserWindow | null = null;
 let splashWin: BrowserWindow | null = null;
+let tray: Tray | null = null;
 // 关闭拦截开关：为 true 时允许真正退出（对应「直接关闭」）
 let forceClose = false;
 
@@ -695,6 +696,37 @@ function createWindow() {
 app.whenReady().then(() => {
   createSplashWindow();
   createWindow();
+
+  // 系统托盘：最小化到后台后，用户可通过托盘图标重新打开主窗口或退出
+  const iconPath = path.join(app.getAppPath(), 'dist', 'icon.png');
+  tray = new Tray(iconPath);
+  tray.setToolTip('🐮🐴的打工日志');
+  const contextMenu = Menu.buildFromTemplate([
+    {
+      label: '显示主窗口',
+      click: () => {
+        if (mainWin && !mainWin.isDestroyed()) {
+          mainWin.show();
+          mainWin.focus();
+        }
+      },
+    },
+    { type: 'separator' },
+    {
+      label: '退出',
+      click: () => {
+        forceClose = true;
+        app.quit();
+      },
+    },
+  ]);
+  tray.setContextMenu(contextMenu);
+  tray.on('double-click', () => {
+    if (mainWin && !mainWin.isDestroyed()) {
+      mainWin.show();
+      mainWin.focus();
+    }
+  });
 });
 
 app.on('window-all-closed', () => {

@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useHabitStore } from '../store/habitsStore';
 import { Confetti } from './Confetti';
 import { HabitForm } from './HabitForm';
+import { HabitTrendChart } from './HabitTrendChart';
 import type { Habit } from '../types';
 
 function ymd(d: Date): string {
@@ -34,6 +35,14 @@ export function HabitDetailView({
   useEffect(() => {
     getCheckins(habit.id, monthStart, monthEnd);
   }, [habit.id, monthStart, monthEnd, getCheckins]);
+
+  // 趋势图数据：获取最近一年的打卡记录
+  useEffect(() => {
+    const now = new Date();
+    const yearAgo = new Date(now.getFullYear() - 1, now.getMonth(), now.getDate());
+    getCheckins(habit.id, ymd(yearAgo), ymd(now));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [habit.id]);
 
   // 回到前台时刷新当月打卡，避免后台通过小组件打卡后详情页状态滞后
   useEffect(() => {
@@ -166,6 +175,8 @@ export function HabitDetailView({
           })}
         </div>
       </div>
+
+      <HabitTrendChart checkins={checkins} color={habit.color} />
 
       <div className="habit-log">
         <div className="habit-log-title">当月打卡日志（{checkins.length} 天）</div>

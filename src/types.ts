@@ -177,7 +177,7 @@ export const HABIT_ICONS: string[] = [
   '🎯',
 ];
 
-/** 习惯默认主题色候选 */
+/** 习惯默认主题色候选（含纯色 + 渐变色） */
 export const HABIT_COLORS: string[] = [
   '#f5a623',
   '#2f8f5a',
@@ -185,4 +185,16 @@ export const HABIT_COLORS: string[] = [
   '#e0533d',
   '#9c6b3f',
   '#7a4fb0',
+  '#e91e63',
+  '#00bcd4',
+  '#ff6f00',
+  '#607d8b',
+  '#8bc34a',
+  '#ff5252',
+  'linear-gradient(135deg, #f5a623, #e0533d)',
+  'linear-gradient(135deg, #2f8f5a, #00bcd4)',
+  'linear-gradient(135deg, #7a4fb0, #e91e63)',
+  'linear-gradient(135deg, #2f78c4, #8bc34a)',
+  'linear-gradient(135deg, #ff6f00, #f5a623)',
+  'linear-gradient(135deg, #e91e63, #7a4fb0)',
 ];

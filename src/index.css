@@ -274,6 +274,54 @@ button {
   opacity: 0.8;
   font-style: italic;
 }
+/* 倒计时可点击提示 */
+.offwork-countdown {
+  cursor: pointer;
+  border-radius: 6px;
+  padding: 1px 4px;
+  transition: background 0.15s ease;
+}
+.offwork-countdown:hover {
+  background: rgba(255, 255, 255, 0.12);
+}
+.offwork-wrap {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+.offwork-picker {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  display: flex;
+  gap: 4px;
+  background: var(--card);
+  border: 1.5px solid var(--card-border);
+  border-radius: 10px;
+  padding: 6px 8px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.18);
+  z-index: 50;
+  white-space: nowrap;
+}
+.offwork-opt {
+  padding: 4px 10px;
+  border-radius: 8px;
+  font-size: 11px;
+  font-weight: 700;
+  border: 1.5px solid var(--card-border);
+  background: var(--card);
+  color: var(--ink);
+  cursor: pointer;
+  transition: all 0.12s ease;
+}
+.offwork-opt.on {
+  background: var(--header-green);
+  color: #fff;
+  border-color: var(--header-green);
+}
+.offwork-opt:active {
+  transform: scale(0.95);
+}
 
 /* ===== 工作状态设置面板 ===== */
 .ws-wrap {
@@ -3281,6 +3329,203 @@ body:not(.is-mobile) .has-titlebar {
 [data-theme="dark"] .titlebar {
   background: linear-gradient(180deg, rgba(18, 36, 29, 0.96), rgba(9, 18, 14, 0.96));
 }
+/* 弹窗 / 模态框 */
+[data-theme="dark"] .modal-backdrop {
+  background: rgba(0, 0, 0, 0.7);
+}
+[data-theme="dark"] .modal,
+[data-theme="dark"] .confirm-modal,
+[data-theme="dark"] .close-modal {
+  background: var(--card);
+  color: var(--ink);
+  border-color: var(--card-border);
+}
+[data-theme="dark"] .modal h3,
+[data-theme="dark"] .confirm-modal h3 {
+  color: var(--ink);
+}
+[data-theme="dark"] .confirm-msg {
+  color: var(--ink-soft);
+}
+/* 底部导航 */
+[data-theme="dark"] .bottom-tabs {
+  background: rgba(9, 18, 14, 0.96);
+  border-color: var(--card-border);
+}
+[data-theme="dark"] .bottom-tabs button {
+  color: var(--ink-soft);
+}
+[data-theme="dark"] .bottom-tabs button.active {
+  color: var(--header-green-dark);
+}
+/* 习惯相关 */
+[data-theme="dark"] .habit-check-btn {
+  background: var(--card);
+  border-color: var(--header-green);
+}
+[data-theme="dark"] .habit-check-btn.on {
+  background: var(--header-green);
+  color: #fff;
+}
+[data-theme="dark"] .habit-item {
+  background: var(--card);
+  border-color: var(--card-border);
+}
+[data-theme="dark"] .habit-icon-opt {
+  background: var(--card);
+  border-color: var(--card-border);
+}
+[data-theme="dark"] .habit-icon-opt.on {
+  background: #1a3a2a;
+  border-color: var(--header-green);
+}
+[data-theme="dark"] .habit-color-opt {
+  border-color: var(--card-border);
+}
+[data-theme="dark"] .habit-day {
+  background: var(--card);
+  border-color: var(--card-border);
+  color: var(--ink);
+}
+[data-theme="dark"] .habit-day.checked {
+  background: var(--header-green);
+  border-color: var(--header-green);
+  color: #fff;
+}
+[data-theme="dark"] .habit-actions .btn.secondary {
+  background: #243a31;
+  color: var(--ink);
+}
+[data-theme="dark"] .habit-err {
+  background: #3a1d18;
+  color: #ff9b89;
+}
+[data-theme="dark"] .habit-log-chip {
+  border-color: var(--header-green);
+  color: var(--header-green-dark);
+}
+/* 提醒弹窗 */
+[data-theme="dark"] .reminder-popup {
+  background: var(--card);
+  color: var(--ink);
+}
+[data-theme="dark"] .reminder-popup.in-app {
+  background: rgba(0, 0, 0, 0.7);
+}
+[data-theme="dark"] .reminder-card {
+  background: var(--card);
+  color: var(--ink);
+  border-color: var(--card-border);
+}
+/* 浮动按钮 */
+[data-theme="dark"] .fab {
+  background: var(--header-green);
+  box-shadow: 0 6px 18px rgba(63, 174, 116, 0.35);
+}
+/* 成本页面 */
+[data-theme="dark"] .cost-day-modal {
+  background: var(--card);
+  border-color: var(--card-border);
+}
+[data-theme="dark"] .cost-day-row {
+  background: var(--card);
+  border-color: var(--card-border);
+}
+[data-theme="dark"] .cost-day-footer {
+  background: var(--card);
+  border-color: var(--card-border);
+}
+[data-theme="dark"] .cost-summary {
+  background: rgba(63, 174, 116, 0.12);
+}
+[data-theme="dark"] .cost-add-row {
+  background: rgba(63, 174, 116, 0.15);
+  color: var(--header-green-dark);
+}
+/* 日历 */
+[data-theme="dark"] .cal-day {
+  background: var(--card);
+  border-color: var(--card-border);
+  color: var(--ink);
+}
+[data-theme="dark"] .cal-day.today {
+  border-color: var(--header-green);
+}
+[data-theme="dark"] .cal-header {
+  color: var(--ink);
+}
+/* 列表统计 */
+[data-theme="dark"] .list-summary {
+  color: var(--ink-soft);
+}
+/* 空状态 */
+[data-theme="dark"] .empty {
+  color: var(--ink-soft);
+}
+/* 错误提示 */
+[data-theme="dark"] .err {
+  background: #3a1d18;
+  color: #ff9b89;
+  border-color: #5e2a22;
+}
+/* 服务器配置弹窗 */
+[data-theme="dark"] .server-config-modal {
+  background: var(--card);
+  color: var(--ink);
+}
+/* 下班倒计时 */
+[data-theme="dark"] .offwork-countdown {
+  color: var(--ink-soft);
+}
+[data-theme="dark"] .offwork-countdown.tone-count {
+  color: var(--header-green-dark);
+}
+[data-theme="dark"] .offwork-countdown.tone-done {
+  color: var(--done);
+}
+[data-theme="dark"] .offwork-countdown.tone-rest {
+  color: var(--postpone);
+}
+/* 工作状态设置 */
+[data-theme="dark"] .ws-mode-btn {
+  background: #243a31;
+  color: var(--ink);
+  border-color: var(--card-border);
+}
+[data-theme="dark"] .ws-mode-btn.on {
+  background: var(--header-green);
+  color: #06210f;
+}
+[data-theme="dark"] .ws-plan-item {
+  background: var(--card);
+  border-color: var(--card-border);
+}
+/* 主题切换按钮 */
+[data-theme="dark"] .theme-opt {
+  background: #243a31;
+  color: var(--ink);
+  border-color: var(--card-border);
+}
+[data-theme="dark"] .theme-opt.on {
+  background: var(--header-green);
+  color: #06210f;
+}
+/* 标签配置 chip */
+[data-theme="dark"] .tag-chip {
+  background: #1d3a2b;
+  color: var(--header-green-dark);
+  border-color: var(--card-border);
+}
+/* 登录页面 */
+[data-theme="dark"] .login-box {
+  background: var(--card);
+  border-color: var(--card-border);
+}
+/* body 装饰 emoji */
+[data-theme="dark"] body::before,
+[data-theme="dark"] body::after {
+  opacity: 0.25;
+}
 
 /* ===== 返回顶部（通用，报告页使用） ===== */
 .back-to-top {
@@ -3326,6 +3571,16 @@ body:not(.is-mobile) .has-titlebar {
     height: 46px;
     font-size: 22px;
   }
+}
+
+/* ===== 列表统计摘要（历史页/报告页顶部） ===== */
+.list-summary {
+  text-align: center;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--ink-soft);
+  padding: 6px 14px 2px;
+  letter-spacing: 0.3px;
 }
 
 /* ===== 任务卡片：间距/字号/空状态/按态微调（四段式结构不变） ===== */
@@ -3675,6 +3930,86 @@ body:not(.is-mobile) .has-titlebar {
   padding: 2px 9px;
   cursor: pointer;
 }
+
+/* 趋势图 */
+.habit-trend {
+  background: var(--card);
+  border: 2px solid var(--card-border);
+  border-radius: var(--radius);
+  padding: 14px;
+  box-shadow: var(--shadow);
+}
+.habit-trend-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+.habit-trend-title {
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--ink);
+}
+.habit-trend-dims {
+  display: flex;
+  gap: 4px;
+}
+.habit-trend-dim {
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  border: 1.5px solid var(--card-border);
+  background: var(--card);
+  color: var(--ink-soft);
+  cursor: pointer;
+  transition: all 0.12s ease;
+}
+.habit-trend-dim.on {
+  background: var(--header-green);
+  color: #fff;
+  border-color: var(--header-green);
+}
+.habit-trend-chart {
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+  height: 100px;
+}
+.habit-trend-col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+}
+.habit-trend-bar-wrap {
+  width: 100%;
+  height: 80px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+.habit-trend-bar {
+  width: 60%;
+  min-width: 4px;
+  max-width: 18px;
+  border-radius: 4px 4px 1px 1px;
+  min-height: 2px;
+  transition: height 0.3s ease;
+  opacity: 0.85;
+}
+.habit-trend-label {
+  font-size: 9px;
+  color: var(--ink-soft);
+  font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
 .habit-actions {
   position: sticky;
   bottom: 100px;

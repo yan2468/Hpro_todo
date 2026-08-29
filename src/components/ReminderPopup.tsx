@@ -42,6 +42,7 @@ export function ReminderPopup(props?: {
   id?: string | null;
   inApp?: boolean;
   onClose?: () => void;
+  onSnooze?: (id: string, when: Date) => void;
 }) {
   const fromHash = getParamsFromHash();
   const title = (props?.title ?? fromHash.title) || '任务时间到啦！';
@@ -69,6 +70,8 @@ export function ReminderPopup(props?: {
     const when = iso ? new Date(iso) : new Date(Date.now() + (minutes ?? 10) * 60000);
     // 重新设定系统通知（移动端 LocalNotifications / 桌面 Electron 主进程），实现延期提醒
     await scheduleReminder(title, when, id ?? undefined);
+    // 通知父组件更新任务 reminderAt + 清除 firedIds，让应用内轮询也能再次触发
+    if (id) props?.onSnooze?.(id, when);
     setSnoozed(true);
     setTimeout(close, 1200);
   };

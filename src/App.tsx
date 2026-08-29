@@ -413,21 +413,24 @@ function Shell({ onOpenSettings }: { onOpenSettings: () => void }) {
           emptyText="暂无任务，点右下角 + 添加一个吧！"
         />
       ) : (
-        <TaskOutline
-          tasks={historyTasks}
-          expanded={expanded}
-          onToggleExpand={toggleExpand}
-          onToggle={toggle}
-          onDelete={remove}
-          onEdit={editTask}
-          onAddSub={addSub}
-          onSetReminder={openReminderPicker}
-          onToggleStep={toggleStep}
-          onReorder={reorderTask}
-          emptyText="还没有已完成或延期的任务"
-        />
+        <>
+          <div className="list-summary">共 {historyTasks.length} 条历史记录</div>
+          <TaskOutline
+            tasks={historyTasks}
+            expanded={expanded}
+            onToggleExpand={toggleExpand}
+            onToggle={toggle}
+            onDelete={remove}
+            onEdit={editTask}
+            onAddSub={addSub}
+            onSetReminder={openReminderPicker}
+            onToggleStep={toggleStep}
+            onReorder={reorderTask}
+            emptyText="还没有已完成或延期的任务"
+          />
+        </>
       )}
-      {view !== 'reports' && view !== 'calendar' && view !== 'habits' && view !== 'cost' && (
+      {view === 'active' && (
         <FloatingButton
           onClick={() => {
             setEditing(null);
@@ -445,7 +448,6 @@ function Shell({ onOpenSettings }: { onOpenSettings: () => void }) {
         <button className={view === 'history' ? 'active' : ''} onClick={() => setView('history')}>
           <span className="tab-icon">📦</span>
           <span className="tab-label">历史</span>
-          <span className="tab-count">{historyTasks.length}</span>
         </button>
         <button className={view === 'calendar' ? 'active' : ''} onClick={() => setView('calendar')}>
           <span className="tab-icon">📅</span>
@@ -462,7 +464,6 @@ function Shell({ onOpenSettings }: { onOpenSettings: () => void }) {
         <button className={view === 'reports' ? 'active' : ''} onClick={() => setView('reports')}>
           <span className="tab-icon">📊</span>
           <span className="tab-label">报告</span>
-          <span className="tab-count">{reportStore.reports.length}</span>
         </button>
       </nav>
       {formOpen && (
@@ -504,6 +505,14 @@ function Shell({ onOpenSettings }: { onOpenSettings: () => void }) {
           id={inAppReminder.id}
           inApp
           onClose={() => setInAppReminder(null)}
+          onSnooze={(taskId, when) => {
+            // 更新任务的 reminderAt，让应用内轮询能在延期时间到时再次触发
+            store.updateTask(taskId, { reminderAt: when.toISOString() });
+            // 清除已触发标记，这样轮询会重新检测这个任务
+            firedReminderIds.current.delete(taskId);
+            // 同步清除桌面端的已调度标记
+            scheduledReminderIds.current.delete(taskId);
+          }}
         />
       )}
     </div>

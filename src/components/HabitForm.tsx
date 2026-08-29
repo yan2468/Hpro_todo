@@ -85,7 +85,7 @@ export function HabitForm({
               ))}
               <input
                 type="color"
-                value={color}
+                value={color.startsWith('#') ? color : '#f5a623'}
                 onChange={(e) => setColor(e.target.value)}
                 className="habit-color-custom"
                 title="自定义颜色"

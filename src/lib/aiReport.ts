@@ -63,8 +63,12 @@ export function weeklyDailies(reports: Report[], now: Date = new Date()): Report
 }
 
 export function hasWeeklyThisWeek(reports: Report[], now: Date = new Date()): boolean {
-  const { startStr } = weekRange(now);
-  return reports.some((r) => r.type === 'weekly' && r.reportDate === startStr);
+  const { startStr, endStr } = weekRange(now);
+  return reports.some((r) => {
+    if (r.type !== 'weekly' || !r.reportDate) return false;
+    const d = toLocalYMD(r.reportDate);
+    return d >= startStr && d <= endStr;
+  });
 }
 
 // ===== 调用大模型（桌面端走主进程 ai:chat 规避 CORS，移动/Web 走直连）=====
