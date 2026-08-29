@@ -43,12 +43,15 @@ export function ReminderPopup(props?: {
   inApp?: boolean;
   onClose?: () => void;
   onSnooze?: (id: string, when: Date) => void;
+  onDismiss?: (id: string) => void;
 }) {
   const fromHash = getParamsFromHash();
   const title = (props?.title ?? fromHash.title) || '任务时间到啦！';
   const id = props?.id ?? fromHash.id;
   const inApp = props?.inApp ?? false;
   const close = () => {
+    // 点击"知道了"时清除该任务的提醒，避免重复弹出
+    if (id) props?.onDismiss?.(id);
     if (inApp) props?.onClose?.();
     else window.close();
   };

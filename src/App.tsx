@@ -513,6 +513,11 @@ function Shell({ onOpenSettings }: { onOpenSettings: () => void }) {
             // 同步清除桌面端的已调度标记
             scheduledReminderIds.current.delete(taskId);
           }}
+          onDismiss={(taskId) => {
+            // "知道了"：清除任务的提醒时间，不再重复弹出
+            store.updateTask(taskId, { reminderAt: null });
+            cancelReminder(taskId);
+          }}
         />
       )}
     </div>
