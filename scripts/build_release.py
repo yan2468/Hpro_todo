@@ -1,4 +1,5 @@
 import os
+import glob
 import shutil
 import zipfile
 import sys
@@ -18,6 +19,12 @@ RELEASE = os.path.join(ROOT, 'release')
 ARCHIVE = os.path.join(RELEASE, '_archive')
 
 PC_ZIP = os.path.join(RELEASE, '\U0001f42e\U0001f434\u7684\u6253\u5de5\u65e5\u5fd7-\u7535\u8111\u7248.zip')
+
+# Portable single-file exe (electron-builder "portable" target).
+# It lands directly in release-out/*.exe - note win-unpacked/ keeps its own exe
+# in a SUBdirectory, so anything matching release-out/*.exe is the portable one.
+# Double-click to run; no install, no unzip, fits on a USB stick.
+PC_EXE = os.path.join(RELEASE, '\U0001f42e\U0001f434\u7684\u6253\u5de5\u65e5\u5fd7-\u7535\u8111\u7248.exe')
 
 # Pick the newest win-unpacked among possible electron output dirs
 # (release-out, release-out-fix, ...) so we never package a stale build.
@@ -45,7 +52,12 @@ SRV_ZIP = os.path.join(RELEASE, 'dave-tasks-server.zip')
 APK_SRC = os.path.join(ROOT, 'android', 'app', 'build', 'outputs', 'apk', 'debug', 'app-debug.apk')
 APK_DST = os.path.join(RELEASE, '\U0001f42e\U0001f434\u7684\u6253\u5de5\u65e5\u5fd7-\u5b89\u5353\u7248.apk')
 
-CANONICAL = {os.path.basename(PC_ZIP), os.path.basename(APK_DST), os.path.basename(SRV_ZIP)}
+CANONICAL = {
+    os.path.basename(PC_ZIP),
+    os.path.basename(PC_EXE),
+    os.path.basename(APK_DST),
+    os.path.basename(SRV_ZIP),
+}
 REDUNDANT_MARKERS = ('\u4fee\u590d', 'fix', 'Fix', 'FIX', 'beta', 'Beta', 'BETA')
 
 
@@ -79,6 +91,19 @@ def main():
     else:
         print('[SKIP] PC source missing: no win-unpacked under release-out* (run build:electron first)')
         failures.append('pc')
+
+    # Portable exe (optional artifact - skipping it is NOT a failure, because the
+    # zip above already covers the "I just want the app" case).
+    portables = sorted(glob.glob(os.path.join(ROOT, 'release-out', '*.exe')))
+    if portables:
+        try:
+            shutil.copy2(portables[0], PC_EXE)
+            print('[OK] Portable exe -> %s (%d bytes) [double-click to run, no unzip]'
+                  % (os.path.basename(PC_EXE), os.path.getsize(PC_EXE)))
+        except Exception as e:
+            print('[FAIL] Portable exe copy: %s' % e)
+    else:
+        print('[SKIP] Portable exe not built: no *.exe in release-out (portable target missing?)')
 
     # Server: live source (server/) + deploy-only files (deploy/server/)
     if os.path.isdir(SRV_SRC):
@@ -121,9 +146,9 @@ def main():
     # Remove redundant old builds. On a normal machine this deletes them for real
     # (fulfilling "只留正式版"); inside a sandbox with a safe-delete hook the delete
     # is blocked, so we fall back to moving them into release/_archive (reversible).
-    if not os.path.isdir(ARCHIVE):
-        os.makedirs(ARCHIVE)
-    archived = []
+    # Collect first - only create _archive if we actually have something to move,
+    # otherwise every run leaves an empty directory behind.
+    redundant = []
     for name in os.listdir(RELEASE):
         p = os.path.join(RELEASE, name)
         if not os.path.isfile(p):
@@ -131,12 +156,19 @@ def main():
         if name in CANONICAL:
             continue
         if any(m in name for m in REDUNDANT_MARKERS):
-            try:
-                os.remove(p)
-                archived.append('%s (deleted)' % name)
-            except Exception:
-                shutil.move(p, os.path.join(ARCHIVE, name))
-                archived.append('%s (archived)' % name)
+            redundant.append(name)
+
+    archived = []
+    for name in redundant:
+        p = os.path.join(RELEASE, name)
+        try:
+            os.remove(p)
+            archived.append('%s (deleted)' % name)
+        except Exception:
+            if not os.path.isdir(ARCHIVE):
+                os.makedirs(ARCHIVE)
+            shutil.move(p, os.path.join(ARCHIVE, name))
+            archived.append('%s (archived)' % name)
     if archived:
         print('[OK] Removed redundant old builds: %s' % ', '.join(archived))
     else:

@@ -5,7 +5,7 @@
   "directories": {
     "output": "release-out"
   },
-  "compression": "store",
+  "compression": "normal",
   "asar": false,
   "files": [
     "dist/**/*",
@@ -28,7 +28,11 @@
     "!release/**/*"
   ],
   "win": {
-    "target": [{ "target": "dir", "arch": ["x64"] }]
+    "target": [
+      { "target": "dir", "arch": ["x64"] },
+      { "target": "portable", "arch": ["x64"] }
+    ],
+    "artifactName": "🐮🐴的打工日志-${version}.${ext}"
   },
   "mac": {
     "target": [],

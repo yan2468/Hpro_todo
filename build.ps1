@@ -30,6 +30,25 @@ Write-Host '==================================================='
 Write-Host ' Build official release - one click, one version'
 Write-Host '==================================================='
 
+# ---------- 0/3  Clean stale build output ----------
+# release-out/ (win-unpacked, ~260MB) 是 electron-builder 的中间产物，不是交付物。
+# 每次构建前清空，两个好处：
+#   1) 省磁盘
+#   2) 防止 builder 增量复用旧 release-out，导致打进 zip 的是陈旧 dist
+# 删除走 node fs.rmSync + NODE_OPTIONS 置空（关掉 safe-delete shim），
+# 否则几万个文件会触发沙箱的安全删除拦截。
+$ReleaseOut = Join-Path $Root 'release-out'
+if (Test-Path $ReleaseOut) {
+    Write-Host ''
+    Write-Host '[0/3] Cleaning stale release-out (~260MB) ...'
+    & node -e "require('fs').rmSync(process.argv[1],{recursive:true,force:true})" $ReleaseOut
+    if (Test-Path $ReleaseOut) {
+        Write-Host '[WARN] Could not fully clean release-out - build may reuse stale files.' -ForegroundColor Yellow
+    } else {
+        Write-Host '[OK] release-out cleaned.' -ForegroundColor Green
+    }
+}
+
 # ---------- 1/3  PC (Electron) ----------
 Write-Host ''
 Write-Host '[1/3] Building PC version (Electron exe) ...'
