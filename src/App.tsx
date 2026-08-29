@@ -584,7 +584,7 @@ export default function App() {
   };
   // 注册主进程的关闭请求回调（×按钮 / Alt+F4 / 任务栏关闭统一汇聚）
   useEffect(() => {
-    const off = electronAPI?.onRequestClose?.(handleAppClose);
+    const off = electronAPI?.window?.onRequestClose?.(handleAppClose);
     return () => off?.();
   }, [handleAppClose]);
 

@@ -1,9 +1,25 @@
 import { DEFAULT_API_BASE } from './platform';
 
+// 早期硬编码默认值 / 老 IP，迁到 HTTPS 后应当自动作废。命中后清掉 localStorage
+// 让 getBase() 落回 DEFAULT_API_BASE。否则老用户升级后 SettingsModal 仍显示老值，
+// 实际请求也会发到不通的老地址（用户浑然不知）。
+// 用户主动设回这些值不会被误清：清掉的是 localStorage 残留，不是后续手动配置。
+const EXPIRED_BASES = new Set<string>([
+  'http://8.163.32.86:8787',
+  'https://www.hbywqx.top',
+]);
+
+function resolveBase(): string {
+  let saved = localStorage.getItem('dd_api_base');
+  if (saved && EXPIRED_BASES.has(saved)) {
+    localStorage.removeItem('dd_api_base');
+    saved = null;
+  }
+  return (saved || import.meta.env.VITE_API_BASE || DEFAULT_API_BASE).replace(/\/$/, '');
+}
+
 export function getBase(): string {
-  const saved = localStorage.getItem('dd_api_base');
-  const raw = saved || import.meta.env.VITE_API_BASE || DEFAULT_API_BASE;
-  return raw.replace(/\/$/, '');
+  return resolveBase();
 }
 
 function getToken(): string | null {
