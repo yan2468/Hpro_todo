@@ -3,6 +3,16 @@ import shutil
 import zipfile
 import sys
 
+# Windows console defaults to GBK (cp936), which cannot encode the emoji in
+# the release filenames (🐮🐴) - printing them would raise UnicodeEncodeError
+# even though the files were written fine. Force UTF-8 for stdout/stderr so
+# this script behaves the same no matter who invokes it (cmd, PowerShell, CI).
+for _stream in (sys.stdout, sys.stderr):
+    try:
+        _stream.reconfigure(encoding='utf-8', errors='replace')
+    except Exception:
+        pass
+
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 RELEASE = os.path.join(ROOT, 'release')
 ARCHIVE = os.path.join(RELEASE, '_archive')
