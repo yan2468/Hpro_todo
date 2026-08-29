@@ -23,11 +23,13 @@
         android:src="@drawable/widget_bg_unchecked" />
 
     <!-- 背景图上的半透明遮罩，保证文字可读 -->
-    <View
+    <ImageView
         android:id="@+id/widget_habit_overlay"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="#40000000"
+        android:contentDescription="遮罩"
+        android:src="@drawable/widget_overlay"
+        android:scaleType="fitXY"
         android:visibility="gone" />
 
     <LinearLayout

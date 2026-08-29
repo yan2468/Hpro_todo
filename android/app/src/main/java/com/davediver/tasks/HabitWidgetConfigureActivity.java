@@ -13,6 +13,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -129,6 +131,13 @@ public class HabitWidgetConfigureActivity extends Activity {
         });
     }
 
+    // 当前选中的习惯 + 样式配置
+    private HabitItem selectedItem;
+    private String selectedShape = HabitWidgetProvider.SHAPE_CIRCLE;
+    private int selectedCorner = 16;
+    private String selectedBgUri = "";
+    private static final int PICK_IMAGE_REQUEST = 1001;
+
     private void showHabits(List<HabitItem> items) {
         loading.setVisibility(View.GONE);
         if (items.isEmpty()) {
@@ -146,14 +155,79 @@ public class HabitWidgetConfigureActivity extends Activity {
         listView.setAdapter(adapter);
         listView.setVisibility(View.VISIBLE);
         listView.setOnItemClickListener((parent, view, position, id) -> {
-            HabitItem item = items.get(position);
-            saveAndBind(item, base, token);
+            selectedItem = items.get(position);
+            // 显示样式设置区域
+            listView.setVisibility(View.GONE);
+            LinearLayout styleSection = findViewById(R.id.configure_style_section);
+            styleSection.setVisibility(View.VISIBLE);
+            initStyleControls(base, token);
+        });
+    }
+
+    private void initStyleControls(String base, String token) {
+        Button btnCircle = findViewById(R.id.btn_shape_circle);
+        Button btnRounded = findViewById(R.id.btn_shape_rounded);
+        Button btnSquare = findViewById(R.id.btn_shape_square);
+        LinearLayout cornerSection = findViewById(R.id.corner_section);
+        TextView cornerLabel = findViewById(R.id.corner_label);
+        android.widget.SeekBar cornerSeekbar = findViewById(R.id.corner_seekbar);
+        Button btnPickBg = findViewById(R.id.btn_pick_bg);
+        TextView bgStatus = findViewById(R.id.bg_status);
+        Button btnConfirm = findViewById(R.id.btn_confirm);
+
+        // 形状按钮
+        android.view.View.OnClickListener shapeClick = v -> {
+            int vid = v.getId();
+            if (vid == R.id.btn_shape_circle) {
+                selectedShape = HabitWidgetProvider.SHAPE_CIRCLE;
+                cornerSection.setVisibility(View.GONE);
+            } else if (vid == R.id.btn_shape_rounded) {
+                selectedShape = HabitWidgetProvider.SHAPE_ROUNDED;
+                cornerSection.setVisibility(View.VISIBLE);
+            } else {
+                selectedShape = HabitWidgetProvider.SHAPE_SQUARE;
+                cornerSection.setVisibility(View.GONE);
+            }
+            btnCircle.setAlpha(selectedShape.equals(HabitWidgetProvider.SHAPE_CIRCLE) ? 1f : 0.5f);
+            btnRounded.setAlpha(selectedShape.equals(HabitWidgetProvider.SHAPE_ROUNDED) ? 1f : 0.5f);
+            btnSquare.setAlpha(selectedShape.equals(HabitWidgetProvider.SHAPE_SQUARE) ? 1f : 0.5f);
+        };
+        btnCircle.setOnClickListener(shapeClick);
+        btnRounded.setOnClickListener(shapeClick);
+        btnSquare.setOnClickListener(shapeClick);
+        // 默认高亮
+        btnCircle.setAlpha(1f);
+        btnRounded.setAlpha(0.5f);
+        btnSquare.setAlpha(0.5f);
+
+        // 圆角 SeekBar
+        cornerSeekbar.setOnSeekBarChangeListener(new android.widget.SeekBar.OnSeekBarChangeListener() {
+            public void onProgressChanged(android.widget.SeekBar sb, int progress, boolean fromUser) {
+                selectedCorner = progress;
+                cornerLabel.setText("圆角大小：" + progress + "dp");
+            }
+            public void onStartTrackingTouch(android.widget.SeekBar sb) {}
+            public void onStopTrackingTouch(android.widget.SeekBar sb) {}
+        });
+
+        // 选择背景照片
+        btnPickBg.setOnClickListener(v -> {
+            Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+            intent.addCategory(Intent.CATEGORY_OPENABLE);
+            intent.setType("image/*");
+            startActivityForResult(intent, PICK_IMAGE_REQUEST);
+        });
+
+        // 确认按钮
+        btnConfirm.setOnClickListener(v -> {
+            saveAndBind(selectedItem, base, token);
         });
     }
 
     private void saveAndBind(HabitItem item, String base, String token) {
         loading.setVisibility(View.VISIBLE);
-        listView.setVisibility(View.GONE);
+        LinearLayout styleSection = findViewById(R.id.configure_style_section);
+        styleSection.setVisibility(View.GONE);
 
         executor.execute(() -> {
             try {
@@ -210,6 +284,9 @@ public class HabitWidgetConfigureActivity extends Activity {
                         .putString("total_" + widgetId, String.valueOf(total))
                         .putBoolean("checked_" + widgetId, checkedToday)
                         .putString("last_date_" + widgetId, today)
+                        .putString("shape_" + widgetId, selectedShape)
+                        .putInt("corner_" + widgetId, selectedCorner)
+                        .putString("bg_image_" + widgetId, selectedBgUri)
                         .apply();
 
                 HabitWidgetProvider.updateWidget(this, AppWidgetManager.getInstance(this), widgetId);
@@ -228,6 +305,24 @@ public class HabitWidgetConfigureActivity extends Activity {
                 });
             }
         });
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == PICK_IMAGE_REQUEST && resultCode == RESULT_OK && data != null) {
+            android.net.Uri uri = data.getData();
+            if (uri != null) {
+                // 持久化读取权限，确保重启后小组件仍能访问图片
+                try {
+                    getContentResolver().takePersistableUriPermission(uri,
+                            Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                } catch (Exception ignored) {}
+                selectedBgUri = uri.toString();
+                TextView bgStatus = findViewById(R.id.bg_status);
+                bgStatus.setText("已选择背景照片 ✓");
+            }
+        }
     }
 
     private void finishCancel() {
