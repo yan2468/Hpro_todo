@@ -14,9 +14,10 @@ const MODES: WorkMode[] = ['normal', 'overtime', 'dayoff'];
 export function WorkStatusSettings() {
   const [cfg, setCfg] = useState<WorkStatusConfig>(getWorkStatus());
   const [wsMsg, setWsMsg] = useState('');
-  // 预设未来安排
+  // 加班登记
   const [presetDate, setPresetDate] = useState('');
   const [presetMode, setPresetMode] = useState<WorkMode>('overtime');
+  const [presetOtStart, setPresetOtStart] = useState('18:00');
   const [presetOtEnd, setPresetOtEnd] = useState('20:00');
   const [presetCross, setPresetCross] = useState(false);
   const [presetRest, setPresetRest] = useState('');
@@ -63,12 +64,13 @@ export function WorkStatusSettings() {
 
   const addPreset = () => {
     if (!presetDate) {
-      flash('请先选择要预设的日期');
+      flash('请先选择要登记的日期');
       return;
     }
     const plans = { ...cfg.plans };
     const plan: DayPlan = { mode: presetMode };
     if (presetMode === 'overtime') {
+      plan.overtimeStart = presetOtStart;
       plan.overtimeEnd = presetOtEnd;
       plan.overtimeCrossMidnight = presetCross;
     }
@@ -77,7 +79,7 @@ export function WorkStatusSettings() {
     }
     plans[presetDate] = plan;
     persist({ ...cfg, plans });
-    flash(`已预设 ${presetDate} 为「${MODE_LABELS[presetMode]}」`);
+    flash(`已登记 ${presetDate} 为「${MODE_LABELS[presetMode]}」`);
   };
 
   const delPreset = (d: string) => {
@@ -92,8 +94,11 @@ export function WorkStatusSettings() {
     .sort((a, b) => (a[0] < b[0] ? -1 : 1));
 
   const detailOf = (p: DayPlan): string => {
-    if (p.mode === 'overtime')
-      return `加班结束 ${p.overtimeEnd || '—'}${p.overtimeCrossMidnight ? '（跨天）' : ''}`;
+    if (p.mode === 'overtime') {
+      const start = p.overtimeStart || '—';
+      const end = p.overtimeEnd || '—';
+      return `${start} ~ ${end}${p.overtimeCrossMidnight ? '（跨天）' : ''}`;
+    }
     if (p.mode === 'dayoff') return p.restText?.trim() ? `文案：${p.restText.trim()}` : '休息';
     return '正常工作';
   };
@@ -117,6 +122,14 @@ export function WorkStatusSettings() {
 
       {todayPlan.mode === 'overtime' && (
         <div className="field-row" style={{ marginTop: 8 }}>
+          <div className="field">
+            <label>加班开始时间</label>
+            <input
+              type="time"
+              value={todayPlan.overtimeStart || '18:00'}
+              onChange={(e) => updateTodayOt({ overtimeStart: e.target.value })}
+            />
+          </div>
           <div className="field">
             <label>加班结束时间</label>
             <input
@@ -147,9 +160,9 @@ export function WorkStatusSettings() {
         </div>
       )}
 
-      {/* —— 按日期预设未来安排 —— */}
+      {/* —— 加班登记 —— */}
       <div className="field-label" style={{ marginTop: 14 }}>
-        按日期预设未来安排
+        加班登记
       </div>
       <div className="ws-preset-row">
         <div className="field" style={{ flex: '1 1 130px' }}>
@@ -162,14 +175,22 @@ export function WorkStatusSettings() {
             value={presetMode}
             onChange={(e) => setPresetMode(e.target.value as WorkMode)}
           >
+            <option value="overtime">加班</option>
             <option value="normal">正常工作日</option>
-            <option value="overtime">临时加班</option>
             <option value="dayoff">调休/休息</option>
           </select>
         </div>
       </div>
       {presetMode === 'overtime' && (
         <div className="ws-preset-row" style={{ marginTop: 6 }}>
+          <div className="field" style={{ flex: '1 1 120px' }}>
+            <label>加班开始时间</label>
+            <input
+              type="time"
+              value={presetOtStart}
+              onChange={(e) => setPresetOtStart(e.target.value)}
+            />
+          </div>
           <div className="field" style={{ flex: '1 1 120px' }}>
             <label>加班结束时间</label>
             <input

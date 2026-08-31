@@ -11,6 +11,7 @@ type ReportInput = {
   endDate?: string;
   reportTime?: string;
   company?: string;
+  status?: 'draft' | 'published';
   bullets?: string[];
   content?: string[]; // 兼容 DB 字段名
 };
@@ -25,6 +26,7 @@ function normalize(row: any) {
     endDate: row.end_date,
     reportTime: row.report_time || DEFAULT_REPORT_TIME,
     company: row.company || DEFAULT_COMPANY,
+    status: row.status || 'published',
     // DB 实际字段为 content（与 DDL 一致），返回给前端仍用 bullets
     bullets: row.content ?? row.bullets ?? [],
     createdAt: row.created_at,
@@ -80,10 +82,11 @@ export async function registerReports(app: FastifyInstance) {
       }
       const reportDate = b.reportDate ?? new Date().toISOString().slice(0, 10);
       const bullets = b.bullets ?? b.content ?? [];
+      const status = b.status || 'published';
       const r = await pool.query(
-        `INSERT INTO reports(user_id, type, title, report_date, end_date, report_time, company, content)
-         VALUES($1,$2,$3,$4,(($4::date) + (CASE WHEN $2 = 'weekly' THEN 6 ELSE 0 END))::date,$5,$6,$7) RETURNING *`,
-        [uid, b.type, b.title, reportDate, b.reportTime, b.company, bullets]
+        `INSERT INTO reports(user_id, type, title, report_date, end_date, report_time, company, content, status)
+         VALUES($1,$2,$3,$4,(($4::date) + (CASE WHEN $2 = 'weekly' THEN 6 ELSE 0 END))::date,$5,$6,$7,$8) RETURNING *`,
+        [uid, b.type, b.title, reportDate, b.reportTime, b.company, bullets, status]
       );
       return normalize(r.rows[0]);
     } catch (e: any) {
@@ -103,6 +106,7 @@ export async function registerReports(app: FastifyInstance) {
       if ('reportDate' in b) map.report_date = b.reportDate;
       if ('reportTime' in b) map.report_time = b.reportTime;
       if ('company' in b) map.company = b.company;
+      if ('status' in b) map.status = b.status;
       // DB 字段为 content，前端字段为 bullets，同时兼容旧字段名
       if ('bullets' in b) map.content = b.bullets;
       if ('content' in b) map.content = b.content;

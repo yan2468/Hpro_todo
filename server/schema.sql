@@ -41,6 +41,7 @@ CREATE TABLE IF NOT EXISTS reports (
   report_time TEXT, -- 开始时间 HH:mm；周报结束时间自动套用同一时间
   company     TEXT, -- 所属公司 / 单位
   content     TEXT[] DEFAULT '{}', -- 报告分点（前端字段名为 bullets）
+  status      TEXT DEFAULT 'published' CHECK (status IN ('draft', 'published')),
   created_at  TIMESTAMPTZ DEFAULT now(),
   updated_at  TIMESTAMPTZ DEFAULT now()
 );

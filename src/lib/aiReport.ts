@@ -52,11 +52,12 @@ function toLocalYMD(s: string): string {
   return `${y}-${mo}-${da}`;
 }
 
-// ===== 本周日报数量（自动生成前提：>=5）=====
+// ===== 本周日报数量（自动生成前提：>=5条正式状态日报）=====
 export function weeklyDailies(reports: Report[], now: Date = new Date()): Report[] {
   const { startStr, endStr } = weekRange(now);
   return reports.filter((r) => {
     if (r.type !== 'daily' || !r.reportDate) return false;
+    if ((r as any).status === 'draft') return false; // 草稿不计入
     const s = toLocalYMD(r.reportDate);
     return s >= startStr && s <= endStr;
   });
@@ -131,6 +132,90 @@ function parseResult(text: string): WeeklyResult {
       .map(cleanBullet)
       .filter(Boolean);
     return { title: '本周工作周报', bullets: lines.length ? lines : [trimmed] };
+  }
+}
+
+// ===== AI 生成今日日报 =====
+function buildDailyMessages(config: AIConfig, tasks: Task[], now: Date) {
+  const p = (n: number) => String(n).padStart(2, '0');
+  const todayStr = `${now.getFullYear()}-${p(now.getMonth() + 1)}-${p(now.getDate())}`;
+
+  // 今日已完成的任务
+  const completed = tasks.filter((t) => {
+    if (t.status !== 'completed') return false;
+    const u = t.updatedAt || t.createdAt;
+    if (!u) return false;
+    const d = new Date(u);
+    const ds = `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`;
+    return ds === todayStr;
+  });
+
+  const taskText = completed.length
+    ? completed.map((t) => `- ${t.title}（${categoryLabel(t.category)}）`).join('\n')
+    : '（今日暂无已完成任务）';
+
+  const system =
+    (config.dailyPrompt || config.prompt || '你是一名严谨的日报助理，负责根据今日已完成的任务，生成一份结构清晰的工作日报。').trim() +
+    '要求：1）用简体中文；2）按工作内容归类；3）语言精炼客观；4）只输出日报正文。';
+
+  const user =
+    `请基于以下「${todayStr}」今日资料生成日报。\n\n` +
+    `=== 今日已完成任务 ===\n${taskText}\n\n` +
+    `请严格以如下 JSON 格式输出（不要包裹在代码块里）：\n` +
+    `{ "title": "${todayStr} 工作日报", "bullets": ["分点1", "分点2", ...] }`;
+
+  return [
+    { role: 'system' as const, content: system },
+    { role: 'user' as const, content: user },
+  ];
+}
+
+export async function generateAndSaveDaily(
+  config: AIConfig,
+  tasks: Task[],
+  reports: Report[],
+  addReport: (r: Partial<Report>) => Promise<any>,
+  now: Date = new Date()
+): Promise<GenResult> {
+  if (!config.enabled) return { ok: false, error: 'AI 未启用' };
+  if (!config.apiKey || !config.url) return { ok: false, error: '请先在设置中心填写 API Key 与接口地址' };
+
+  // 检查今日是否已有正式日报
+  const p = (n: number) => String(n).padStart(2, '0');
+  const todayStr = `${now.getFullYear()}-${p(now.getMonth() + 1)}-${p(now.getDate())}`;
+  const hasTodayDaily = reports.some((r) => {
+    if (r.type !== 'daily' || !r.reportDate) return false;
+    if ((r as any).status === 'draft') return false;
+    return toLocalYMD(r.reportDate) === todayStr;
+  });
+  if (hasTodayDaily) return { ok: true, skipped: true, title: '今日日报已存在' };
+
+  // 今日已完成任务数量
+  const completed = tasks.filter((t) => {
+    if (t.status !== 'completed') return false;
+    const u = t.updatedAt || t.createdAt;
+    if (!u) return false;
+    const d = new Date(u);
+    const ds = `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`;
+    return ds === todayStr;
+  });
+  if (completed.length === 0) return { ok: false, error: '今日暂无已完成的任务' };
+
+  try {
+    const messages = buildDailyMessages(config, tasks, now);
+    const content = await callLLM(config, messages);
+    const result = parseResult(content);
+    const title = result.title || `${todayStr} 工作日报`;
+    await addReport({
+      type: 'daily',
+      title,
+      reportDate: todayStr,
+      reportTime: `${p(now.getHours())}:${p(now.getMinutes())}:${p(now.getSeconds())}`,
+      bullets: result.bullets,
+    });
+    return { ok: true, title };
+  } catch (e: any) {
+    return { ok: false, error: e?.message || '生成失败' };
   }
 }
 

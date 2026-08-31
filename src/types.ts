@@ -52,6 +52,7 @@ export interface Task {
 }
 
 export type ReportType = 'daily' | 'weekly';
+export type ReportStatus = 'draft' | 'published';
 
 export interface Report {
   id: string;
@@ -62,6 +63,7 @@ export interface Report {
   endDate?: string;
   reportTime?: string; // HH:mm，日报/周报开始时间；周报结束时间自动 = 开始时间 + 6 天
   company?: string; // 所属公司 / 单位
+  status: ReportStatus; // draft=暂存/草稿，published=正式发布
   bullets: string[];
   createdAt: string;
   updatedAt?: string;

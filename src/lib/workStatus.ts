@@ -9,6 +9,7 @@ export type WorkMode = 'normal' | 'overtime' | 'dayoff';
 export interface DayPlan {
   mode: WorkMode;
   // mode === 'overtime' 时生效
+  overtimeStart?: string; // HH:mm，加班开始时刻
   overtimeEnd?: string; // HH:mm，加班结束时刻
   overtimeCrossMidnight?: boolean; // 加班是否跨到次日（处理跨天边界）
   // mode === 'dayoff' 时生效，覆盖全局默认休息文案
@@ -127,12 +128,15 @@ export function computeCountdown(
   }
 
   // 2) 计算起止时刻
-  const start = todayAt(profile.workStart || '09:00', 9, now);
+  let start: Date;
   let end: Date;
   if (plan.mode === 'overtime') {
+    // 加班模式：用加班开始/结束时间（未设则回退到正常上下班时间）
+    start = todayAt(plan.overtimeStart || profile.workStart || '09:00', 9, now);
     end = todayAt(plan.overtimeEnd || profile.workEnd || '18:00', 18, now);
     if (plan.overtimeCrossMidnight) end = new Date(end.getTime() + 86400000);
   } else {
+    start = todayAt(profile.workStart || '09:00', 9, now);
     end = todayAt(profile.workEnd || '18:00', 18, now);
   }
 

@@ -7,7 +7,7 @@ import { ReportForm, type ReportFormData } from './ReportForm';
 import { BackToTop } from './BackToTop';
 import { parseReports } from '../lib/parseReports';
 import { getAIConfig } from '../lib/aiConfig';
-import { generateAndSaveWeekly, weeklyDailies, hasWeeklyThisWeek } from '../lib/aiReport';
+import { generateAndSaveWeekly, generateAndSaveDaily, weeklyDailies, hasWeeklyThisWeek } from '../lib/aiReport';
 
 // 报告卡片 / 导出展示用的日期时间：reportDate + 可选的 HH:mm
 // 后端返回的 reportDate 是 ISO 字符串（如 2026-08-19T16:00:00.000Z），需按本地时区解析
@@ -74,6 +74,28 @@ export function ReportsView() {
     setAiBusy(false);
     if (res.ok) {
       setAiStatus(res.skipped ? '本周周报已存在，已跳过' : `已生成周报：${res.title}`);
+    } else {
+      setAiStatus(`生成失败：${res.error}`);
+    }
+  };
+
+  const generateDailyAI = async () => {
+    const cfg = getAIConfig();
+    if (!cfg.enabled) {
+      setAiStatus('AI 未启用，请到「设置中心 → AI 配置」开启');
+      return;
+    }
+    setAiBusy(true);
+    setAiStatus('正在调用大模型生成今日日报…');
+    const res = await generateAndSaveDaily(
+      cfg,
+      taskStore.tasks ?? [],
+      store.reports,
+      store.addReport
+    );
+    setAiBusy(false);
+    if (res.ok) {
+      setAiStatus(res.skipped ? '今日日报已存在，已跳过' : `已生成日报：${res.title}`);
     } else {
       setAiStatus(`生成失败：${res.error}`);
     }
@@ -354,6 +376,14 @@ export function ReportsView() {
         >
           {aiBusy ? '生成中…' : '🤖 AI 生成本周周报'}
         </button>
+        <button
+          className="btn ai-gen-btn daily"
+          onClick={generateDailyAI}
+          disabled={aiBusy}
+          title="根据今日已完成任务，调用大模型生成今日日报"
+        >
+          {aiBusy ? '生成中…' : '🤖 AI 生成今日日报'}
+        </button>
         <div className={`ai-status ${aiReady ? '' : 'warn'}`}>
           本周日报 {dailiesThisWeek} / 5 条
           {aiReady
@@ -390,10 +420,11 @@ export function ReportsView() {
           </div>
         ) : (
           filtered.map((r) => (
-            <div key={r.id} className={`report-card ${r.type}`}>
+            <div key={r.id} className={`report-card ${r.type} ${r.status === 'draft' ? 'draft' : ''}`}>
               <div className="report-card-head">
                 <div className="report-title-row">
                   <span className="report-badge">{r.type === 'daily' ? '日报' : '周报'}</span>
+                  {r.status === 'draft' && <span className="report-badge draft-badge">草稿</span>}
                   <span className="report-title">{r.title}</span>
                 </div>
                 <span className="report-date">
@@ -416,6 +447,11 @@ export function ReportsView() {
                 )}
               </ol>
               <div className="report-actions">
+                {r.status === 'draft' && (
+                  <button className="icon-btn publish" onClick={() => store.updateReport(r.id, { status: 'published' } as any)} title="发布">
+                    🚀
+                  </button>
+                )}
                 <button className="icon-btn" onClick={() => exportOne(r)} title="导出此条">
                   ⬇
                 </button>

@@ -2399,6 +2399,26 @@ body.widget-mode {
 .report-card.weekly::before {
   background: #2f78c4;
 }
+.report-card.draft {
+  opacity: 0.75;
+  border-style: dashed;
+}
+.report-card.draft::before {
+  background: var(--ink-soft);
+}
+.draft-badge {
+  background: var(--ink-soft) !important;
+  color: #fff !important;
+  font-size: 10px !important;
+}
+.icon-btn.publish {
+  color: var(--header-green);
+}
+.ai-gen-btn.daily {
+  background: rgba(47, 120, 196, 0.12);
+  color: #2f78c4;
+  border-color: rgba(47, 120, 196, 0.3);
+}
 .report-card-head {
   display: flex;
   flex-direction: column;

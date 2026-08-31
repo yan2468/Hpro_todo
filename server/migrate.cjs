@@ -153,6 +153,15 @@ const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL, max: 2 })
     `);
     console.log('回填 report_time：', timeFill.rowCount, '条');
 
+    // 4) reports 表增加 status 字段（暂存/正式）
+    await pool.query(`
+      ALTER TABLE reports ADD COLUMN IF NOT EXISTS status TEXT DEFAULT 'published'
+    `);
+    await pool.query(`
+      UPDATE reports SET status = 'published' WHERE status IS NULL
+    `);
+    console.log('已确保 reports.status 字段');
+
     console.log('迁移完成：已确保 tasks / reports 新字段并完成旧数据回填');
 
     const r = await pool.query(

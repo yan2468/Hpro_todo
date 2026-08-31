@@ -49,6 +49,7 @@ export interface ReportFormData {
   endDate: string;
   reportTime: string;
   company: string;
+  status: import('../types').ReportStatus;
   bullets: string[];
 }
 
@@ -138,6 +139,23 @@ export function ReportForm({ initial, defaultType = 'daily', onSubmit, onClose }
       endDate,
       reportTime: finalTime,
       company: finalCompany,
+      status: 'published',
+      bullets: trimmed.length ? trimmed : [''],
+    });
+  };
+
+  const handleSaveDraft = () => {
+    const trimmed = bullets.map((b) => b.trim()).filter((b) => b.length > 0);
+    const finalTime = time.trim() || DEFAULT_TIME;
+    const finalCompany = company.trim() || DEFAULT_COMPANY;
+    onSubmit({
+      type,
+      title: title.trim() || defaultReportTitle(type, date),
+      reportDate: date,
+      endDate,
+      reportTime: finalTime,
+      company: finalCompany,
+      status: 'draft',
       bullets: trimmed.length ? trimmed : [''],
     });
   };
@@ -238,6 +256,9 @@ export function ReportForm({ initial, defaultType = 'daily', onSubmit, onClose }
           <div className="btn-row">
             <button type="button" className="btn" onClick={onClose}>
               取消
+            </button>
+            <button type="button" className="btn" onClick={handleSaveDraft}>
+              📌 暂存
             </button>
             <button type="submit" className="btn primary">
               {initial ? '保存' : '创建'}
